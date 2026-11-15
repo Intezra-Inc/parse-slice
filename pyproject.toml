@@ -1,0 +1,28 @@
+[build-system]
+requires = ["setuptools>=69", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "parse-slice"
+version = "0.1.0"
+description = "Nemotron 3.5 Parse with automatic page slicing for dense pages"
+readme = "README.md"
+license = "Apache-2.0"
+authors = [{ name = "Intezra, Inc." }]
+requires-python = ">=3.10"
+# nemotron-parse is not on PyPI: install it from NVIDIA's model repository first (see README).
+dependencies = ["nemotron-parse[client]>=3.5.0.post7", "numpy>=1.26", "Pillow>=10"]
+
+[project.urls]
+Homepage = "https://github.com/Intezra-Inc/parse-slice"
+Issues = "https://github.com/Intezra-Inc/parse-slice/issues"
+
+[project.optional-dependencies]
+pdf = ["pypdfium2>=4.30"]
+bench = ["rapidfuzz>=3.9"]
+
+[project.scripts]
+parse-slice = "parse_slice.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["parse_slice*"]

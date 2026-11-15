@@ -1,0 +1,25 @@
+# docker compose up -d parse                                  start the server (first start takes a few minutes)
+# docker compose run --rm --user "$(id -u):$(id -g)" slice /input -o /output             parse ./input into ./output
+# PARSE_GPU=1 docker compose up -d parse                      pick the GPU (default 0)
+services:
+  parse:
+    build: { context: ., dockerfile: docker/Dockerfile }
+    image: parse-slice:0.1.0
+    shm_size: 8gb
+    ports: ["127.0.0.1:${PARSE_PORT:-8000}:8000"]
+    deploy:
+      resources:
+        reservations:
+          devices: [{ driver: nvidia, device_ids: ["${PARSE_GPU:-0}"], capabilities: [gpu] }]
+    healthcheck:
+      test: ["CMD", "python3", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/v1/models', timeout=5)"]
+      interval: 15s
+      timeout: 10s
+      retries: 80
+      start_period: 60s
+  slice:
+    image: parse-slice:0.1.0
+    profiles: [run]
+    entrypoint: ["parse-slice", "--url", "http://parse:8000/v1"]
+    volumes: ["./input:/input:ro", "./output:/output"]
+    depends_on: { parse: { condition: service_healthy } }
